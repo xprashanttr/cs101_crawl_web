@@ -5,7 +5,7 @@
 
 from bs4 import BeautifulSoup, SoupStrainer
 import requests, httplib2, json, pprint, os
-
+from utilities import xlog
 
 
 def get_page(url):
@@ -14,6 +14,7 @@ def get_page(url):
 	if page: return page.text
 	else: 
 		print ("Error in requesting page html body: " + url)
+		xlog("Error in requesting page html body: " + url, 'debug')
 		return None
 	'''
 	if url in cache:
@@ -38,14 +39,16 @@ def get_all_links(url):
 	try : reqs = requests.get(url)
 	except : return links
 	
-	soup = BeautifulSoup(reqs.text, 'html.parser')
+	try : soup = BeautifulSoup(reqs.text, 'html.parser')
+	except : return links
+	
 	#soup = BeautifulSoup(page, 'html.parser')
 	for link in soup.find_all('a'):
 		x = link.get('href')
 		try:
 			if x.startswith('https:') and 'linkedin' not in x.lower() and 'facebook' not in x.lower() and 'drive.google' not in x.lower() and 'comcast' not in x.lower(): 
 				links.append(x)
-				#print(x)
+				#xlog(x, 'debug')
 		except AttributeError: None 		
 	return links
 
@@ -63,14 +66,13 @@ def get_all_links(page):
 '''
 
 
-
 def add_page_to_index(index, url):
 	reqs = requests.get(url)
 	soup = BeautifulSoup(reqs.text, 'html.parser')
 	#Adding page title to index
 	title = soup.find('title')
 	try :
-		#print(title.string)
+		#xlog(title.string, 'debug')
 		add_to_index(index, title.string, url)
 	except : None
 	#Find keywords in page and add to the index 
@@ -87,7 +89,6 @@ def add_to_index(index, keyword, url):
         index[keyword].append(url)
     else:
         index[keyword] = [url]
-
 
 def crawl_web(seed, max_depth, max_iterations): # returns index, graph of inlinks
 	tocrawl = set([seed])
@@ -115,7 +116,8 @@ def crawl_web(seed, max_depth, max_iterations): # returns index, graph of inlink
 		#print('----------------')
 		
 		url = tocrawl.pop() #-Handle This if duplicacy at graph level
-		print('depth('+ str(depth) +')/iteration('+str(i)+')/ url - '+ url)
+		#print('depth('+ str(depth) +')/iteration('+str(i)+')/ url - '+ url)
+		xlog('depth('+ str(depth) +')/iteration('+str(i)+')/ url - '+ url, 'debug')
 		
 		if url not in crawled:
 			content = get_page(url)
@@ -149,11 +151,6 @@ def crawl_web(seed, max_depth, max_iterations): # returns index, graph of inlink
 	'''
 	#return index, graph
 	return graph, index
-
-
-
-
-
 
 def compute_ranks(graph):
     d = 0.8 # damping factor
