@@ -58,23 +58,3 @@ exit()
 
 
 
-
-
-#--Test URL
-#url = 'http://udacity.com/cs101x/urank/index.html'
-#url = 'http://udacity.com/cs101x/urank/arsenic.html'
-print('Probing --> '+ url)
-
-#Compute Graph
-print('Computing graph and index')
-graph, index = crawl_web(url, max_depth) #, max_iterations)
-dump_dict2file(graph,'graph.datax')
-dump_dict2file(index,'index.datax')
-print('Computing graph and index - done')
-
-#Compute Rank
-print('Computing rank')
-ranks = compute_ranks(graph)
-dump_dict2file(ranks,'rank.datax')
-print('Computing rank - done')
-
